@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoRa Trekker Safety Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-content">
+        <div class="logo-section">
+          <div class="logo">⛰️</div>
+          <div class="title-section">
+            <h1>LoRa Trekker Safety Dashboard</h1>
+            <p class="subtitle">Real-time monitoring for trekker safety</p>
+          </div>
+        </div>
+        <div class="status-bar">
+          <div class="status-item">
+            <span class="status-icon" id="connection-status">🟢</span>
+            <span id="connection-text">Connected</span>
+          </div>
+          <div class="status-item">
+            <span class="status-icon">🕒</span>
+            <span id="last-update">Last update: --</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <div class="map-container">
+        <div class="map-header">
+          <h3>📍 Trekker Locations</h3>
+          <div class="map-controls">
+            <button id="center-map" class="control-btn">🎯 Center Map</button>
+            <button id="toggle-markers" class="control-btn">👁️ Toggle Markers</button>
+          </div>
+        </div>
+        <div id="map"></div>
+        <div class="map-legend">
+          <div class="legend-item"><span class="legend-color p1-color"></span>Trekker P1</div>
+          <div class="legend-item"><span class="legend-color p2-color"></span>Trekker P2</div>
+          <div class="legend-item"><span class="legend-color p3-color"></span>Trekker P3</div>
+          <div class="legend-item"><span class="legend-color p4-color"></span>Trekker P4</div>
+        </div>
+      </div>
+      <div class="dashboard-grid">
+        <div class="node-card" id="p1-card">
+          <div class="node-header">
+            <div class="node-info">
+              <h2>🏃 Trekker P1</h2>
+              <div class="node-id">ID: P1</div>
+            </div>
+            <div class="alert-indicator safe" id="p1-alert">
+              <span class="alert-icon">🟢</span>
+              <span class="alert-text">Safe</span>
+            </div>
+          </div>
+          <div class="sensor-grid">
+            <div class="sensor-item"><div class="sensor-icon">🌡️</div><div class="sensor-data"><span class="label">Temperature</span><span class="value" id="p1-temp">--°C</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">🌪️</div><div class="sensor-data"><span class="label">Pressure</span><span class="value" id="p1-press">--hPa</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">⛰️</div><div class="sensor-data"><span class="label">Altitude</span><span class="value" id="p1-alt">--m</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">🔋</div><div class="sensor-data"><span class="label">Battery</span><span class="value" id="p1-batt">--%</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">📶</div><div class="sensor-data"><span class="label">RSSI</span><span class="value" id="p1-rssi">--dBm</span></div></div>
+          </div>
+          <div class="coordinates"><span class="coord-icon">📍</span><span id="p1-coords">Lat: --, Lon: --</span></div>
+        </div>
+        <div class="node-card" id="p2-card">
+          <div class="node-header">
+            <div class="node-info">
+              <h2>🏃 Trekker P2</h2>
+              <div class="node-id">ID: P2</div>
+            </div>
+            <div class="alert-indicator safe" id="p2-alert">
+              <span class="alert-icon">🟢</span>
+              <span class="alert-text">Safe</span>
+            </div>
+          </div>
+          <div class="sensor-grid">
+            <div class="sensor-item"><div class="sensor-icon">🌡️</div><div class="sensor-data"><span class="label">Temperature</span><span class="value" id="p2-temp">--°C</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">🌪️</div><div class="sensor-data"><span class="label">Pressure</span><span class="value" id="p2-press">--hPa</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">⛰️</div><div class="sensor-data"><span class="label">Altitude</span><span class="value" id="p2-alt">--m</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">🔋</div><div class="sensor-data"><span class="label">Battery</span><span class="value" id="p2-batt">--%</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">📶</div><div class="sensor-data"><span class="label">RSSI</span><span class="value" id="p2-rssi">--dBm</span></div></div>
+          </div>
+          <div class="coordinates"><span class="coord-icon">📍</span><span id="p2-coords">Lat: --, Lon: --</span></div>
+        </div>
+        <div class="node-card" id="p3-card">
+          <div class="node-header">
+            <div class="node-info">
+              <h2>🏃 Trekker P3</h2>
+              <div class="node-id">ID: P3</div>
+            </div>
+            <div class="alert-indicator safe" id="p3-alert">
+              <span class="alert-icon">🟢</span>
+              <span class="alert-text">Safe</span>
+            </div>
+          </div>
+          <div class="sensor-grid">
+            <div class="sensor-item"><div class="sensor-icon">🌡️</div><div class="sensor-data"><span class="label">Temperature</span><span class="value" id="p3-temp">--°C</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">🌪️</div><div class="sensor-data"><span class="label">Pressure</span><span class="value" id="p3-press">--hPa</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">⛰️</div><div class="sensor-data"><span class="label">Altitude</span><span class="value" id="p3-alt">--m</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">🔋</div><div class="sensor-data"><span class="label">Battery</span><span class="value" id="p3-batt">--%</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">📶</div><div class="sensor-data"><span class="label">RSSI</span><span class="value" id="p3-rssi">--dBm</span></div></div>
+          </div>
+          <div class="coordinates"><span class="coord-icon">📍</span><span id="p3-coords">Lat: --, Lon: --</span></div>
+        </div>
+        <div class="node-card" id="p4-card">
+          <div class="node-header">
+            <div class="node-info">
+              <h2>🏃 Trekker P4</h2>
+              <div class="node-id">ID: P4</div>
+            </div>
+            <div class="alert-indicator safe" id="p4-alert">
+              <span class="alert-icon">🟢</span>
+              <span class="alert-text">Safe</span>
+            </div>
+          </div>
+          <div class="sensor-grid">
+            <div class="sensor-item"><div class="sensor-icon">🌡️</div><div class="sensor-data"><span class="label">Temperature</span><span class="value" id="p4-temp">--°C</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">🌪️</div><div class="sensor-data"><span class="label">Pressure</span><span class="value" id="p4-press">--hPa</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">⛰️</div><div class="sensor-data"><span class="label">Altitude</span><span class="value" id="p4-alt">--m</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">🔋</div><div class="sensor-data"><span class="label">Battery</span><span class="value" id="p4-batt">--%</span></div></div>
+            <div class="sensor-item"><div class="sensor-icon">📶</div><div class="sensor-data"><span class="label">RSSI</span><span class="value" id="p4-rssi">--dBm</span></div></div>
+          </div>
+          <div class="coordinates"><span class="coord-icon">📍</span><span id="p4-coords">Lat: --, Lon: --</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="alerts-panel">
+      <div class="panel-header">
+        <h3>🚨 Alert History</h3>
+        <div class="alert-count" id="alert-count">0 alerts</div>
+      </div>
+      <div id="alerts-list">
+        <div class="no-alerts">
+          <div class="no-alerts-icon">📋</div>
+          <div class="no-alerts-text">No alerts yet</div>
+          <div class="no-alerts-subtext">System is monitoring all trekkers</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="script.js"></script>
+</body>
+</html> 

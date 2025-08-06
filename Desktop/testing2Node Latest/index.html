@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LoRa Data Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      background: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      padding: 15px;
+      width: 90%;
+      max-width: 320px;
+    }
+    .card h2 {
+      margin: 0 0 10px;
+    }
+    .data-item {
+      margin: 5px 0;
+    }
+    @media (min-width: 600px) {
+      .card {
+        width: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>LoRa Device Dashboard</h1>
+
+  <div class="container">
+    <!-- Card for P1 -->
+    <div class="card" id="card-p1">
+      <h2>Device ID: P1</h2>
+      <div class="data-item">Temperature: <span id="p1-temp">--</span></div>
+      <div class="data-item">Pressure: <span id="p1-pressure">--</span></div>
+      <div class="data-item">Altitude: <span id="p1-altitude">--</span></div>
+      <div class="data-item">Latitude: <span id="p1-lat">--</span></div>
+      <div class="data-item">Longitude: <span id="p1-lon">--</span></div>
+      <div class="data-item">Battery: <span id="p1-batt">--</span></div>
+    </div>
+
+    <!-- Card for P2 -->
+    <div class="card" id="card-p2">
+      <h2>Device ID: P2</h2>
+      <div class="data-item">Temperature: <span id="p2-temp">--</span></div>
+      <div class="data-item">Pressure: <span id="p2-pressure">--</span></div>
+      <div class="data-item">Altitude: <span id="p2-altitude">--</span></div>
+      <div class="data-item">Latitude: <span id="p2-lat">--</span></div>
+      <div class="data-item">Longitude: <span id="p2-lon">--</span></div>
+      <div class="data-item">Battery: <span id="p2-batt">--</span></div>
+    </div>
+  </div>
+
+  <script>
+    async function fetchLatest() {
+      try {
+        const res = await fetch('/latest.txt');
+        const text = await res.text();
+        console.log("Raw response:", text);
+
+        const json = JSON.parse(text);
+
+        if (json.id === "p1") {
+          document.getElementById("p1-temp").textContent = json.temperature;
+          document.getElementById("p1-pressure").textContent = json.pressure;
+          document.getElementById("p1-altitude").textContent = json.altitude;
+          document.getElementById("p1-lat").textContent = json.latitude;
+          document.getElementById("p1-lon").textContent = json.longitude;
+          document.getElementById("p1-batt").textContent = json.battery;
+        }
+
+        if (json.id === "p2") {
+          document.getElementById("p2-temp").textContent = json.temperature;
+          document.getElementById("p2-pressure").textContent = json.pressure;
+          document.getElementById("p2-altitude").textContent = json.altitude;
+          document.getElementById("p2-lat").textContent = json.latitude;
+          document.getElementById("p2-lon").textContent = json.longitude;
+          document.getElementById("p2-batt").textContent = json.battery;
+        }
+
+      } catch (err) {
+        console.error("Failed to fetch or parse /latest.txt:", err);
+      }
+    }
+
+    fetchLatest();
+    setInterval(fetchLatest, 3000); // fetch every 3 seconds
+  </script>
+</body>
+</html>
+

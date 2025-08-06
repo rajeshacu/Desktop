@@ -1,0 +1,8 @@
+{"node_id":"p1","latitude":28.6139,"longitude":77.2090,"temperature":25.5,"pressure":1013.2,"altitude":216,"battery":85,"rssi":-45,"alert_flag":0,"timestamp":"2024-01-15T10:30:00Z"}
+{"node_id":"p2","latitude":28.6145,"longitude":77.2095,"temperature":24.8,"pressure":1012.8,"altitude":218,"battery":92,"rssi":-52,"alert_flag":0,"timestamp":"2024-01-15T10:30:00Z"}
+{"node_id":"p3","latitude":28.6140,"longitude":77.2100,"temperature":26.2,"pressure":1013.5,"altitude":220,"battery":78,"rssi":-48,"alert_flag":0,"timestamp":"2024-01-15T10:30:00Z"}
+{"node_id":"p4","latitude":28.6135,"longitude":77.2085,"temperature":23.9,"pressure":1012.5,"altitude":215,"battery":95,"rssi":-41,"alert_flag":0,"timestamp":"2024-01-15T10:30:00Z"}
+{"node_id":"p1","latitude":28.6140,"longitude":77.2095,"temperature":25.8,"pressure":1013.0,"altitude":217,"battery":84,"rssi":-46,"alert_flag":0,"timestamp":"2024-01-15T10:33:00Z"}
+{"node_id":"p2","latitude":28.6150,"longitude":77.2100,"temperature":24.5,"pressure":1012.6,"altitude":219,"battery":91,"rssi":-53,"alert_flag":0,"timestamp":"2024-01-15T10:33:00Z"}
+{"node_id":"p3","latitude":28.6145,"longitude":77.2105,"temperature":26.5,"pressure":1013.8,"altitude":221,"battery":77,"rssi":-49,"alert_flag":1,"timestamp":"2024-01-15T10:33:00Z"}
+{"node_id":"p4","latitude":28.6140,"longitude":77.2090,"temperature":24.2,"pressure":1012.3,"altitude":216,"battery":94,"rssi":-42,"alert_flag":0,"timestamp":"2024-01-15T10:33:00Z"} 

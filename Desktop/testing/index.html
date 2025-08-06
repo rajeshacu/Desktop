@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>LoRa Tracker Dashboard - Persistent Alert Log & Fullscreen Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="leaflet/leaflet.css" />
+  <style>
+    :root {
+      --bg-color: #f5f7fb;
+      --card-bg: #ffffff;
+      --accent: #007bff;
+      --text: #333;
+      --alert-color: #dc3545;
+    }
+    html, body {
+      margin: 0; padding: 0; height: 100%; width: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg-color);
+    }
+    #map-container {
+      position: relative;
+      width: 100%;
+    }
+    #map {
+      height: 45vh;
+      transition: height 0.3s;
+      background: #e9ecef;
+      z-index: 1;
+    }
+    /* Fullscreen styles */
+    #map.fullscreen, #map-container.fullscreen {
+      position: fixed !important;
+      left: 0; top: 0; right: 0; bottom: 0;
+      width: 100vw !important; height: 100vh !important;
+      z-index: 10010;
+    }
+    #fullscreen-btn {
+      position: absolute;
+      top: 16px; right: 16px;
+      z-index: 10100;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.13);
+      padding: 7px 16px;
+      font-size: 1rem;
+      color: #007bff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #fullscreen-btn:hover {
+      background: #eef5ff;
+    }
+    /* ... rest of your styles are unchanged ... */
+    #alert-summary {
+      background: #f8d7da;
+      border: 1px solid #f5c2c7;
+      color: var(--alert-color);
+      font-weight: bold;
+      padding: 8px 15px;
+      margin: 10px 12px 0 12px;
+      border-radius: 8px;
+      display: none;
+    }
+    .dashboards-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      align-items: flex-start;
+      padding: 10px 12px 20px 12px;
+      gap: 20px;
+      min-height: 48vh;
+      background: var(--bg-color);
+    }
+    .dashboard {
+      min-width: 210px;
+      width: 22vw;
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      animation: fadeInUp 0.5s ease;
+      position: relative;
+    }
+    .card {
+      background: none;
+      border-radius: 0; padding: 0;
+      box-shadow: none;
+      display: flex; flex-direction: column;
+      justify-content: space-between; transition: none; animation: none;
+    }
+    .card-title {
+      font-size: 0.92rem; color: #666; margin-bottom: 2px;
+    }
+    .card-value {
+      font-size: 1.38rem; font-weight: bold; color: var(--text);
+    }
+    .battery-bar {
+      width: 100%; height: 10px; border-radius: 5px;
+      background: #e0e0e0; overflow: hidden; margin-top: 6px;
+    }
+    .battery-fill {
+      height: 100%;
+      background-color: #28a745;
+      transition: width 0.3s, background 0.3s;
+    }
+    .alert-line {
+      color: var(--alert-color);
+      font-weight: 600;
+      margin-top: 8px;
+      font-size: 1rem;
+      border: 1px solid var(--alert-color);
+      border-radius: 8px;
+      padding: 6px 10px;
+      background: #ffe2e6;
+      user-select: none;
+      text-align: center;
+    }
+    @media (max-width: 900px) {
+      .dashboards-container { flex-direction: column; align-items: stretch; }
+      .dashboard { width: 100%; min-width: unset; margin-bottom: 16px; }
+    }
+    #alert-log-container {
+      margin: 10px 12px 24px 12px;
+      background: #fff3f3;
+      border: 1px solid var(--alert-color);
+      border-radius: 10px;
+      padding: 14px 18px;
+      min-height: 50px;
+      font-family: monospace, monospace;
+      color: var(--alert-color);
+      font-weight: 600;
+      box-shadow: 0 3px 9px rgba(220, 53, 69, 0.3);
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    #alert-log-container h3 {
+      margin: 0 0 8px 0;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--alert-color);
+    }
+    #alert-log {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    #alert-log li {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- MAP + FULLSCREEN BUTTON -->
+<div id="map-container">
+  <div id="map"></div>
+  <button id="fullscreen-btn" title="Toggle Fullscreen Map">Go Fullscreen</button>
+</div>
+
+<div id="alert-summary"></div>
+
+<div class="dashboards-container">
+  <!-- ... The dashboard HTML for p1-p4 is unchanged ... -->
+  <div class="dashboard" id="dashboard-p1">
+    <div class="card"><div class="card-title">Device ID</div><div class="card-value" id="id-p1">--</div></div>
+    <div class="card"><div class="card-title">Temperature (°C)</div><div class="card-value" id="temperature-p1">--</div></div>
+    <div class="card"><div class="card-title">Pressure (hPa)</div><div class="card-value" id="pressure-p1">--</div></div>
+    <div class="card"><div class="card-title">Altitude (m)</div><div class="card-value" id="altitude-p1">--</div></div>
+    <div class="card">
+      <div class="card-title">Battery (%)</div>
+      <div class="card-value" id="battery-p1">--</div>
+      <div class="battery-bar"><div id="battery-fill-p1" class="battery-fill" style="width: 0%"></div></div>
+    </div>
+    <div class="alert-line" id="alert-p1" style="display:none;">ALERT!</div>
+  </div>
+  <div class="dashboard" id="dashboard-p2">
+    <div class="card"><div class="card-title">Device ID</div><div class="card-value" id="id-p2">--</div></div>
+    <div class="card"><div class="card-title">Temperature (°C)</div><div class="card-value" id="temperature-p2">--</div></div>
+    <div class="card"><div class="card-title">Pressure (hPa)</div><div class="card-value" id="pressure-p2">--</div></div>
+    <div class="card"><div class="card-title">Altitude (m)</div><div class="card-value" id="altitude-p2">--</div></div>
+    <div class="card">
+      <div class="card-title">Battery (%)</div>
+      <div class="card-value" id="battery-p2">--</div>
+      <div class="battery-bar"><div id="battery-fill-p2" class="battery-fill" style="width: 0%"></div></div>
+    </div>
+    <div class="alert-line" id="alert-p2" style="display:none;">ALERT!</div>
+  </div>
+  <div class="dashboard" id="dashboard-p3">
+    <div class="card"><div class="card-title">Device ID</div><div class="card-value" id="id-p3">--</div></div>
+    <div class="card"><div class="card-title">Temperature (°C)</div><div class="card-value" id="temperature-p3">--</div></div>
+    <div class="card"><div class="card-title">Pressure (hPa)</div><div class="card-value" id="pressure-p3">--</div></div>
+    <div class="card"><div class="card-title">Altitude (m)</div><div class="card-value" id="altitude-p3">--</div></div>
+    <div class="card">
+      <div class="card-title">Battery (%)</div>
+      <div class="card-value" id="battery-p3">--</div>
+      <div class="battery-bar"><div id="battery-fill-p3" class="battery-fill" style="width: 0%"></div></div>
+    </div>
+    <div class="alert-line" id="alert-p3" style="display:none;">ALERT!</div>
+  </div>
+  <div class="dashboard" id="dashboard-p4">
+    <div class="card"><div class="card-title">Device ID</div><div class="card-value" id="id-p4">--</div></div>
+    <div class="card"><div class="card-title">Temperature (°C)</div><div class="card-value" id="temperature-p4">--</div></div>
+    <div class="card"><div class="card-title">Pressure (hPa)</div><div class="card-value" id="pressure-p4">--</div></div>
+    <div class="card"><div class="card-title">Altitude (m)</div><div class="card-value" id="altitude-p4">--</div></div>
+    <div class="card">
+      <div class="card-title">Battery (%)</div>
+      <div class="card-value" id="battery-p4">--</div>
+      <div class="battery-bar"><div id="battery-fill-p4" class="battery-fill" style="width: 0%"></div></div>
+    </div>
+    <div class="alert-line" id="alert-p4" style="display:none;">ALERT!</div>
+  </div>
+</div>
+
+<div id="alert-log-container" aria-live="polite" aria-atomic="true" role="region" aria-label="Persistent Alert Log">
+  <h3>Alert Log (persisted across sessions):</h3>
+  <ul id="alert-log"></ul>
+  <div id="log-empty" style="font-style: italic; color: #999;">No alerts logged yet.</div>
+</div>
+
+<script src="leaflet/leaflet.js"></script>
+<script>
+  // Map setup
+  let map;
+  let isMapFullscreen = false;
+  function initMap() {
+    map = L.map('map', {
+      minZoom: 11,
+      maxZoom: 16
+    }).setView([12.961, 77.598], 14);
+    L.tileLayer('./tiles/{z}/{x}/{y}.png', {
+      maxZoom: 16,
+      minZoom: 11,
+      attribution: 'Offline Map',
+    }).addTo(map);
+  }
+
+  // Fullscreen toggle
+  function toggleFullscreen() {
+    const mapDiv = document.getElementById('map');
+    const mapContainer = document.getElementById('map-container');
+    if (!isMapFullscreen) {
+      mapDiv.classList.add('fullscreen');
+      mapContainer.classList.add('fullscreen');
+      document.getElementById('fullscreen-btn').textContent = "Exit Fullscreen";
+      isMapFullscreen = true;
+    } else {
+      mapDiv.classList.remove('fullscreen');
+      mapContainer.classList.remove('fullscreen');
+      document.getElementById('fullscreen-btn').textContent = "Go Fullscreen";
+      isMapFullscreen = false;
+    }
+    // Must call invalidateSize for Leaflet to re-render map
+    setTimeout(function() {
+      map.invalidateSize();
+    }, 310);
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    initMap();
+    document.getElementById('fullscreen-btn').onclick = toggleFullscreen;
+  });
+
+  // Device icons
+  const icons = {
+    p1: L.icon({
+      iconUrl: 'images/marker-icon-red.png',
+      shadowUrl: 'images/marker-shadow.png',
+      iconSize: [25, 41], shadowSize: [41, 41],
+      iconAnchor: [12, 41], popupAnchor: [1, -34]
+    }),
+    p2: L.icon({
+      iconUrl: 'images/marker-icon-blue.png',
+      shadowUrl: 'images/marker-shadow.png',
+      iconSize: [25, 41], shadowSize: [41, 41],
+      iconAnchor: [12, 41], popupAnchor: [1, -34]
+    }),
+    p3: L.icon({
+      iconUrl: 'images/marker-icon-green.png',
+      shadowUrl: 'images/marker-shadow.png',
+      iconSize: [25, 41], shadowSize: [41, 41],
+      iconAnchor: [12, 41], popupAnchor: [1, -34]
+    }),
+    p4: L.icon({
+      iconUrl: 'images/marker-icon-black.png',
+      shadowUrl: 'images/marker-shadow.png',
+      iconSize: [25, 41], shadowSize: [41, 41],
+      iconAnchor: [12, 41], popupAnchor: [1, -34]
+    }),
+  };
+  let markers = {p1: null, p2: null, p3: null, p4: null};
+  let lines = [];
+  let index = 0;
+  let animationInterval = null;
+  const LOG_KEY = 'lora_alert_log';
+  function loadPersistedLog() {
+    const raw = localStorage.getItem(LOG_KEY);
+    if (!raw) return [];
+    try { return JSON.parse(raw); } catch { return []; }
+  }
+  function savePersistedLog(logArray) {
+    localStorage.setItem(LOG_KEY, JSON.stringify(logArray));
+  }
+  function displayAlertLog() {
+    const logContainer = document.getElementById('alert-log');
+    const logEmpty = document.getElementById('log-empty');
+    const logArray = loadPersistedLog();
+    logContainer.innerHTML = '';
+    if (logArray.length === 0) {
+      logEmpty.style.display = 'block';
+      return;
+    }
+    logEmpty.style.display = 'none';
+    for (const entry of logArray) {
+      const li = document.createElement('li');
+      li.textContent = entry;
+      logContainer.appendChild(li);
+    }
+  }
+  const alertedDevicesThisCycle = new Set();
+  function updateUI(data, pid) {
+    document.getElementById('id-' + pid).textContent = data.id || '--';
+    document.getElementById('temperature-' + pid).textContent = data.temperature ?? '--';
+    document.getElementById('pressure-' + pid).textContent = data.pressure ?? '--';
+    document.getElementById('altitude-' + pid).textContent = data.altitude ?? '--';
+    document.getElementById('battery-' + pid).textContent = data.battery ?? '--';
+    const fill = document.getElementById('battery-fill-' + pid);
+    const battery = parseInt(data.battery);
+    fill.style.width = isNaN(battery) ? '0%' : battery + '%';
+    if (isNaN(battery)) fill.style.background = '#999';
+    else if (battery > 60) fill.style.background = '#28a745';
+    else if (battery > 30) fill.style.background = '#ffc107';
+    else fill.style.background = '#dc3545';
+    // Alert display as text label
+    const alertDiv = document.getElementById('alert-' + pid);
+    const alertFlag = parseInt(data.alert);
+    if (alertFlag === 1) {
+      alertDiv.style.display = 'block';
+      if (!alertedDevicesThisCycle.has(pid)) {
+        alertedDevicesThisCycle.add(pid);
+        addLogEntry(pid);
+      }
+    } else {
+      alertDiv.style.display = 'none';
+      alertedDevicesThisCycle.delete(pid);
+    }
+  }
+  function addLogEntry(pid) {
+    const logArray = loadPersistedLog();
+    const now = new Date();
+    const ts = now.toLocaleString();
+    const logEntry = `${ts}: ALERT detected on device ${pid.toUpperCase()}`;
+    if (!logArray.includes(logEntry)) {
+      logArray.push(logEntry);
+      savePersistedLog(logArray);
+      displayAlertLog();
+    }
+  }
+  function startAnimatedPlayback() {
+    if (animationInterval) clearInterval(animationInterval);
+    animationInterval = setInterval(() => {
+      if (lines.length === 0) return;
+      if (index >= lines.length) index = 0;
+      try {
+        const data = JSON.parse(lines[index]);
+        if (data.id && ['p1','p2','p3','p4'].includes(data.id)) {
+          updateUI(data, data.id);
+          const lat = parseFloat(data.latitude);
+          const lon = parseFloat(data.longitude);
+          if (!isNaN(lat) && !isNaN(lon)) {
+            const popupContent = `
+              <b>ID:</b> ${data.id}<br/>
+              <b>Temp:</b> ${data.temperature} °C<br/>
+              <b>Pressure:</b> ${data.pressure} hPa<br/>
+              <b>Altitude:</b> ${data.altitude} m<br/>
+              <b>Battery:</b> ${data.battery}%<br/>
+              <b>Alert:</b> ${data.alert === 1 ? '<span style="color: var(--alert-color); font-weight:bold;">YES</span>' : 'NO'}
+            `;
+            if (!markers[data.id]) {
+              markers[data.id] = L.marker([lat, lon], {icon: icons[data.id]}).addTo(map).bindPopup(popupContent);
+            } else {
+              markers[data.id].setLatLng([lat, lon]).setPopupContent(popupContent);
+            }
+          }
+        }
+      } catch(e) {
+        console.warn('Invalid JSON line at index', index);
+      }
+      index++;
+    }, 2000);
+  }
+  async function loadData() {
+    try {
+      const res = await fetch('data.txt?_=' + Date.now());
+      const text = await res.text();
+      lines = text.trim().split('\n').filter(l => l.length > 0);
+      index = 0;
+      alertedDevicesThisCycle.clear();
+      displayAlertLog();
+      startAnimatedPlayback();
+    } catch (e) {
+      console.error('Failed to load data', e);
+    }
+  }
+  // On page load, display persisted log and load map/data!
+  displayAlertLog();
+  document.addEventListener('DOMContentLoaded', loadData);
+
+  // Optional reload every minute for new log entries
+  // setInterval(loadData, 60000);
+</script>
+</body>
+</html>
+

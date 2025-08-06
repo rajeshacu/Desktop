@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for the dashboard */
+.custom-trekker-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Ensure map container has proper styling */
+.leaflet-container {
+  font-family: inherit;
+}
+
+/* Custom pulse animation */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

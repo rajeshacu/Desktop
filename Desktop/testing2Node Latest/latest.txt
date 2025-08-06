@@ -1,0 +1,1 @@
+{"id":"p2","latitude":12.961,"longitude":77.598,"temperature":26.2,"pressure":1010,"altitude":880,"battery":96,"alert":1}

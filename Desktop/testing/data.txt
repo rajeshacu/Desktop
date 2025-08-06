@@ -1,0 +1,9 @@
+{"id":"p1","latitude":12.960,"longitude":77.598,"temperature":25.2,"pressure":1011,"altitude":800,"battery":98,"alert":0}
+{"id":"p2","latitude":12.961,"longitude":77.601,"temperature":25.8,"pressure":1013,"altitude":803,"battery":90,"alert":1}
+{"id":"p3","latitude":12.962,"longitude":77.597,"temperature":27.6,"pressure":1005,"altitude":810,"battery":41,"alert":0}
+{"id":"p4","latitude":12.963,"longitude":77.595,"temperature":26.1,"pressure":1009,"altitude":785,"battery":27,"alert":1}
+{"id":"p1","latitude":12.961,"longitude":77.598,"temperature":26.2,"pressure":1010,"altitude":880,"battery":96,"alert":1}
+{"id":"p2","latitude":12.962,"longitude":77.601,"temperature":25.9,"pressure":1012,"altitude":804,"battery":88,"alert":0}
+{"id":"p3","latitude":12.963,"longitude":77.596,"temperature":27.2,"pressure":1004,"altitude":811,"battery":39,"alert":1}
+{"id":"p4","latitude":12.961,"longitude":77.594,"temperature":25.3,"pressure":1009,"altitude":785,"battery":25,"alert":0}
+
